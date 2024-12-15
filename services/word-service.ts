@@ -1,9 +1,9 @@
 import Groq from 'groq-sdk';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
-const apiKey = dotenv.config().parsed.API_KEY;
+const apiKey: string = dotenv.config()?.parsed?.API_KEY || '';
 const groq = new Groq({ apiKey });
-const prompt = `
+const prompt: string = `
 Provide two commonly used everyday nouns for the word game Spyfall. The words should be related but not identical or subtypes of each other, and should not be interchangeable.
 
 Good examples:
