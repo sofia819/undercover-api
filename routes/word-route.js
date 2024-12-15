@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import { wordService } from '../services/word-service.js';
+
 const router = express.Router();
-const wordService = require('../services/word-service');
 
 router.route('').post((req, res) =>
   wordService
@@ -12,4 +13,4 @@ router.route('').post((req, res) =>
     })
 );
 
-module.exports = router;
+export default router;
