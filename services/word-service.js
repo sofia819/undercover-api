@@ -1,8 +1,8 @@
-const Groq = require('groq-sdk');
-const apiKey = require('dotenv').config().parsed.API_KEY;
+import Groq from 'groq-sdk';
+import dotenv from 'dotenv';
 
-const groq = new Groq({ apiKey: apiKey });
-
+const apiKey = dotenv.config().parsed.API_KEY;
+const groq = new Groq({ apiKey });
 const prompt = `
 Provide two commonly used everyday nouns for the word game Spyfall. The words should be related but not identical or subtypes of each other, and should not be interchangeable.
 
@@ -22,7 +22,7 @@ Bad examples:
 Return only the two words, separated by a comma and in lowercase. Do not provide reasoning.
 `;
 
-const getWords = async () => {
+export const getWords = async () => {
   const result = await groq.chat.completions.create({
     messages: [
       {
@@ -35,6 +35,4 @@ const getWords = async () => {
   return result.choices[0]?.message?.content || '';
 };
 
-module.exports = {
-  getWords,
-};
+export const wordService = { getWords };
