@@ -1,18 +1,15 @@
 import { gameDao } from '../data/game-data.js';
 
-enum Role {
-  Civilian,
-  Spy,
-}
-
 interface Game {
   roomId: string;
   civilianWord: string;
   spyWord: string;
   players: string[];
-  currentPlayer?: string;
   spyPlayers: string[];
 }
+
+export const removePlayer = async (roomId: string, playerName: string) =>
+  await gameDao.removePlayer(roomId, playerName);
 
 export const getPlayers = async (roomId: string): Promise<string[]> => {
   const game = await getGame(roomId);
@@ -34,7 +31,7 @@ export const getWord = async (
 export const createRoom = async (): Promise<string> => {
   const roomId = generateRoomId();
 
-  await gameDao.createGame(roomId, [], 'car', 'van', '');
+  await gameDao.createGame(roomId, [], 'car', 'van');
 
   return roomId;
 };
@@ -51,6 +48,7 @@ export const startGame = async (roomId: string) => {
 
   console.log(room);
 
+  // this is the order of players
   const playerNames = shufflePlayers(room.players);
 
   const spy = playerNames[Math.floor(Math.random() * playerNames.length)];
@@ -83,6 +81,7 @@ export const gameService = {
   getWord,
   createRoom,
   joinGame,
+  removePlayer,
   startGame,
   getGame,
 };
