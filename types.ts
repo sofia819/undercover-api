@@ -14,15 +14,15 @@ export interface Player {
 }
 
 export enum Status {
-  waiting,
-  clue,
-  vote,
-  complete,
+  WAITING = 'WAITING',
+  CLUE = 'CLUE',
+  VOTE = 'VOTE',
+  COMPLETE = 'COMPLETE',
 }
 
 export enum Role {
-  civilian,
-  spy,
+  CIVILIAN = 'CIVILIAN',
+  SPY = 'SPY',
 }
 
 export interface Clue {
@@ -34,10 +34,13 @@ export interface Vote {
 }
 
 export interface GameState {
-  roundIndex: number;
+  gameId: string;
+  gameStatus: Status;
+  currentRoundIndex: number;
+  maxRoundIndex: number;
   players: Player[];
+  playerOrder: string[];
   clues: Clue[];
   votes: Vote[];
-  gameStatus: Status;
   winner?: Role;
 }

@@ -37,7 +37,7 @@ const routes = (fastify: FastifyInstance) => {
     ) => {
       const { gameId, playerName } = request.params;
       service.joinGame(gameId, playerName);
-      reply.status(200);
+      reply.send();
     }
   );
 
@@ -76,7 +76,7 @@ const routes = (fastify: FastifyInstance) => {
     (request: FastifyRequest<{ Params: { gameId: string } }>, reply) => {
       const { gameId } = request.params;
       service.startGame(gameId);
-      reply.status(200);
+      reply.send();
       sendGameInfo(gameId);
     }
   );
@@ -108,7 +108,7 @@ const routes = (fastify: FastifyInstance) => {
     ) => {
       const { gameId, playerName, text } = request.params;
       service.submitClue(gameId, playerName, text);
-      reply.status(200);
+      reply.send();
       sendGameInfo(gameId);
     }
   );
@@ -127,7 +127,7 @@ const routes = (fastify: FastifyInstance) => {
     ) => {
       const { gameId, playerName, votedPlayerName } = request.params;
       service.submitVote(gameId, playerName, votedPlayerName);
-      reply.status(200);
+      reply.send();
       sendGameInfo(gameId);
     }
   );

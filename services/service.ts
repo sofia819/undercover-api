@@ -17,7 +17,7 @@ export const createGame = (): string => {
     gameId,
     civilianWord: 'car',
     spyWord: 'van',
-    gameStatus: Status.waiting,
+    gameStatus: Status.WAITING,
     currentRoundIndex: -1,
     maxRoundIndex: 2,
   };
@@ -34,7 +34,7 @@ const generateGameId = (): string => (games['a'] ? 'b' : 'a'); // Math.random().
 const joinGame = (gameId: string, playerName: string) => {
   gamePlayers[gameId][playerName] = {
     playerName,
-    role: Role.civilian,
+    role: Role.CIVILIAN,
     isActive: true,
   };
   gamePlayerOrders[gameId].push(playerName);
@@ -58,7 +58,7 @@ const startGame = (gameId: string) => {
   gamePlayerOrders[gameId] = shuffled;
 
   const spyPlayerIndex = Math.floor(Math.random() * (shuffled.length - 1));
-  players[shuffled[spyPlayerIndex]].role = Role.spy;
+  players[shuffled[spyPlayerIndex]].role = Role.SPY;
 };
 
 const shufflePlayers = (players: string[]) => {
@@ -97,7 +97,7 @@ const submitVote = (
 const getWord = (gameId: string, playerName: string) => {
   const game = games[gameId];
 
-  return gamePlayers[gameId][playerName].role === Role.civilian
+  return gamePlayers[gameId][playerName].role === Role.CIVILIAN
     ? game.civilianWord
     : game.spyWord;
 };
@@ -107,13 +107,13 @@ const updateGameStatus = (gameId: string) => {
   const status = game.gameStatus;
 
   switch (game.gameStatus) {
-    case Status.waiting:
+    case Status.WAITING:
       handleWaitingStatus(game);
       break;
-    case Status.clue:
+    case Status.CLUE:
       handleClueStatus(game);
       break;
-    case Status.vote:
+    case Status.VOTE:
       handleVoteStatus(game);
       break;
   }
@@ -122,7 +122,7 @@ const updateGameStatus = (gameId: string) => {
 };
 
 const handleWaitingStatus = (game: Game) => {
-  game.gameStatus = Status.clue;
+  game.gameStatus = Status.CLUE;
 };
 
 const handleClueStatus = (game: Game) => {
@@ -139,7 +139,7 @@ const handleClueStatus = (game: Game) => {
     return;
   }
 
-  game.gameStatus = Status.vote;
+  game.gameStatus = Status.VOTE;
 };
 
 const handleVoteStatus = (game: Game) => {
@@ -168,15 +168,15 @@ const handleVoteStatus = (game: Game) => {
 
   game.gameStatus =
     game.currentRoundIndex === game.maxRoundIndex || numActivePlayers === 0
-      ? Status.complete
-      : Status.clue;
+      ? Status.COMPLETE
+      : Status.CLUE;
 };
 
 const didCiviliansWin = (gameId: string) => {
   let numActiveSpies = 0;
   Object.values(gamePlayers[gameId]).forEach(
     (player) =>
-      numActiveSpies + (player.role === Role.spy && player.isActive ? 1 : 0)
+      numActiveSpies + (player.role === Role.SPY && player.isActive ? 1 : 0)
   );
 
   return numActiveSpies === 0;
@@ -192,8 +192,12 @@ const containsAll = (arr1: any[], arr2: any[]) =>
   arr2.every((arr2Item) => arr1.includes(arr2Item));
 
 const getGameInfo = (gameId: string) => {
+  const game = games[gameId];
   return {
-    game: games[gameId],
+    gameId: game.gameId,
+    gameStatus: game.gameStatus,
+    currentRoundIndex: game.currentRoundIndex,
+    maxRoundIndex: game.maxRoundIndex,
     players: gamePlayers[gameId],
     playerOrder: gamePlayerOrders[gameId],
     clues: clues[gameId],
