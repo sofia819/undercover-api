@@ -12,6 +12,7 @@ import {
   ErrorType,
   OtherRequest,
   RestartGameRequest,
+  Status,
 } from '../types.js';
 import WebSocket from 'ws';
 
@@ -67,7 +68,7 @@ const routes = (fastify: FastifyInstance) => {
       const { gameId, playerName } = request.body;
       const game = service.getGameInfo(gameId);
 
-      if (!game) {
+      if (!game || game.gameStatus !== Status.WAITING) {
         reply.code(400).send({
           type: ErrorType.INVALID_GAME_ID,
         });
