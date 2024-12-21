@@ -133,8 +133,6 @@ const handleClueStatus = (game: Game) => {
     Object.values(gamePlayers[game.gameId])
   );
 
-  console.log(allActivePlayers);
-
   if (!containsAll(playersSubmittedClues, allActivePlayers)) {
     return;
   }

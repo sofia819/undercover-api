@@ -82,7 +82,7 @@ const routes = (fastify: FastifyInstance) => {
   );
 
   fastify.get(
-    '/:gameId/word/:playerName',
+    '/:gameId/:playerName/word',
     (
       request: FastifyRequest<{
         Params: { gameId: string; playerName: string };
@@ -95,7 +95,7 @@ const routes = (fastify: FastifyInstance) => {
   );
 
   fastify.post(
-    '/:gameId/clue/:playerName/:text',
+    '/:gameId/:playerName/clue/:text',
     (
       request: FastifyRequest<{
         Params: {
@@ -114,7 +114,7 @@ const routes = (fastify: FastifyInstance) => {
   );
 
   fastify.post(
-    '/:gameId/vote/:playerName/:votedPlayerName',
+    '/:gameId/:playerName/vote/:votedPlayerName',
     (
       request: FastifyRequest<{
         Params: {
