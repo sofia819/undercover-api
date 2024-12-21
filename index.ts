@@ -5,7 +5,7 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 
 const fastify = Fastify({
-  logger: true,
+  // logger: true,
 });
 const port: number =
   Number.parseInt(dotenv.config()?.parsed?.PORT || '') || 5000;

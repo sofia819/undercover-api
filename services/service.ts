@@ -11,7 +11,7 @@ const clues: { [gameId: string]: Clue[] } = {};
 const votes: { [gameId: string]: Vote[] } = {};
 
 export const createGame = (): string => {
-  const gameId: string = generateGameId();
+  const gameId: string = generateRandomCode();
 
   games[gameId] = {
     gameId,
@@ -29,7 +29,8 @@ export const createGame = (): string => {
   return gameId;
 };
 
-const generateGameId = (): string => (games['a'] ? 'b' : 'a'); // Math.random().toString(36).substring(3, 7);
+export const generateRandomCode = (): string =>
+  Math.random().toString(36).substring(3, 7);
 
 const joinGame = (gameId: string, playerName: string) => {
   gamePlayers[gameId][playerName] = {
@@ -190,17 +191,20 @@ const containsAll = (arr1: any[], arr2: any[]) =>
   arr2.every((arr2Item) => arr1.includes(arr2Item));
 
 const getGameInfo = (gameId: string) => {
-  const game = games[gameId];
-  return {
-    gameId: game.gameId,
-    gameStatus: game.gameStatus,
-    currentRoundIndex: game.currentRoundIndex,
-    maxRoundIndex: game.maxRoundIndex,
-    players: gamePlayers[gameId],
-    playerOrder: gamePlayerOrders[gameId],
-    clues: clues[gameId],
-    votes: votes[gameId],
-  };
+  const game = games?.[gameId];
+
+  return game
+    ? {
+        gameId: game.gameId,
+        gameStatus: game.gameStatus,
+        currentRoundIndex: game.currentRoundIndex,
+        maxRoundIndex: game.maxRoundIndex,
+        players: gamePlayers[gameId],
+        playerOrder: gamePlayerOrders[gameId],
+        clues: clues[gameId],
+        votes: votes[gameId],
+      }
+    : null;
 };
 
 export const service = {
@@ -213,4 +217,5 @@ export const service = {
   getWord,
   getGameInfo,
   didCiviliansWin,
+  generateRandomCode,
 };

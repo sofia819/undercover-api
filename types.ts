@@ -7,6 +7,11 @@ export interface Game {
   maxRoundIndex: number;
 }
 
+export interface PlayerClient {
+  gameId: string;
+  playerName: string;
+}
+
 export interface Player {
   playerName: string;
   role: Role;
@@ -43,4 +48,50 @@ export interface GameState {
   clues: Clue[];
   votes: Vote[];
   winner?: Role;
+}
+
+export enum MessageType {
+  CONNECTED = 'CONNECTED',
+}
+
+export type Message = CreateGameRequest | JoinGameRequest;
+
+export interface GameConnectedRequest {
+  type: MessageType.CONNECTED;
+  gameId: string;
+  playerName: string;
+}
+
+export interface CreateGameRequest {
+  playerName: string;
+}
+
+export interface JoinGameRequest {
+  gameId: string;
+  playerName: string;
+}
+
+export interface StartGameRequest {
+  gameId: string;
+}
+
+export interface ClueRequest {
+  gameId: string;
+  playerName: string;
+  clue: string;
+}
+
+export interface VoteRequest {
+  gameId: string;
+  playerName: string;
+  vote: string;
+}
+
+export enum ErrorType {
+  INVALID_GAME_ID = 'INVALID_GAME_ID',
+  PLAYER_EXISTS = 'PLAYER_EXISTS',
+}
+
+export interface ErrorMessage {
+  type: ErrorType;
 }
