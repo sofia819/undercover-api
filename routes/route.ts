@@ -112,7 +112,6 @@ const routes = (fastify: FastifyInstance) => {
       }
 
       // TODO: if removed player is a spy and no spies left - broadcast declare winner
-      // TODO: if no more players in game, remove references
     });
   });
 

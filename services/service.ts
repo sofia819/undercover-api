@@ -108,7 +108,6 @@ const getWord = (gameId: string, playerName: string) => {
 
 const updateGameStatus = (gameId: string) => {
   const game = games[gameId];
-  const status = game.gameStatus;
 
   switch (game.gameStatus) {
     case Status.WAITING:
@@ -145,10 +144,11 @@ const handleClueStatus = (game: Game) => {
 };
 
 const handleVoteStatus = (game: Game) => {
-  const currentVotes = votes[game.gameId][game.currentRoundIndex];
+  const { gameId, currentRoundIndex, maxRoundIndex } = game;
+  const currentVotes = votes[gameId][currentRoundIndex];
   const currentVoteCount = Object.keys(currentVotes || {}).length;
   const allActivePlayers = getActivePlayerNames(
-    Object.values(gamePlayers[game.gameId])
+    Object.values(gamePlayers[gameId])
   );
 
   if (allActivePlayers.length != currentVoteCount) {
@@ -158,12 +158,14 @@ const handleVoteStatus = (game: Game) => {
   const playerWithMostVotes = getPlayerWithMaxVotes(
     Object.values(currentVotes)
   );
-  gamePlayers[game.gameId][playerWithMostVotes].isActive = false;
-  incrementRound(game.gameId);
+  gamePlayers[gameId][playerWithMostVotes].isActive = false;
+  gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
+    (player) => player !== playerWithMostVotes
+  );
+  incrementRound(gameId);
 
   game.gameStatus =
-    game.currentRoundIndex === game.maxRoundIndex ||
-    allActivePlayers.length - 1 === 0
+    currentRoundIndex === maxRoundIndex || allActivePlayers.length - 1 === 0
       ? Status.COMPLETE
       : Status.CLUE;
 };
@@ -200,6 +202,7 @@ const containsAll = (arr1: any[], arr2: any[]) =>
 const getGameInfo = (gameId: string) => {
   const game = games?.[gameId];
 
+  // TODO: return winner if exists
   return game
     ? {
         gameId: game.gameId,
