@@ -2,11 +2,7 @@ import { wordService } from '../services/word-service.js';
 import { FastifyInstance } from 'fastify';
 
 const routes = async (fastify: FastifyInstance) => {
-  fastify.get('/', async (request, reply) => {
-    reply.send('hello');
-  });
-
-  fastify.get('/word', async (request, reply) =>
+  fastify.get('/', async (request, reply) =>
     wordService
       .getWords()
       .then((words) => reply.send(words.replace(' ', '').split(',')))
