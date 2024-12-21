@@ -155,21 +155,27 @@ const handleVoteStatus = (game: Game) => {
     return;
   }
 
-  const playerWithMostVotes = Object.keys(currentVotes).reduce((a, b) =>
-    currentVotes[a] > currentVotes[b] ? a : b
+  const playerWithMostVotes = getPlayerWithMaxVotes(
+    Object.values(currentVotes)
   );
   gamePlayers[game.gameId][playerWithMostVotes].isActive = false;
   incrementRound(game.gameId);
 
-  let numActivePlayers = 0;
-  Object.values(gamePlayers[game.gameId]).forEach(
-    (player) => numActivePlayers + (player.isActive ? 1 : 0)
-  );
-
   game.gameStatus =
-    game.currentRoundIndex === game.maxRoundIndex || numActivePlayers === 0
+    game.currentRoundIndex === game.maxRoundIndex ||
+    allActivePlayers.length - 1 === 0
       ? Status.COMPLETE
       : Status.CLUE;
+};
+
+const getPlayerWithMaxVotes = (arr: string[]) => {
+  const map: { [key: string]: number } = {};
+  const counts: { [key: string]: number } = arr.reduce((acc, num) => {
+    acc[num] = (acc[num] || 0) + 1;
+    return acc;
+  }, map);
+
+  return Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b));
 };
 
 const didCiviliansWin = (gameId: string) => {
