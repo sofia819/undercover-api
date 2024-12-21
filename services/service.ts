@@ -48,6 +48,10 @@ const leaveGame = (gameId: string, playerName: string) => {
     (player) => player != playerName
   );
   delete gamePlayers[gameId][playerName];
+  if (Object.keys(gamePlayers[gameId]).length === 0) {
+    delete games[gameId];
+    delete gamePlayers[gameId];
+  }
 };
 
 const startGame = (gameId: string) => {
@@ -90,8 +94,7 @@ const submitVote = (
   votedPlayerName: string
 ) => {
   const round = games[gameId].currentRoundIndex;
-  votes[gameId][round][votedPlayerName] =
-    votes[gameId][round][votedPlayerName] + 1 || 1;
+  votes[gameId][round][playerName] = votedPlayerName;
   updateGameStatus(gameId);
 };
 
@@ -143,9 +146,7 @@ const handleClueStatus = (game: Game) => {
 
 const handleVoteStatus = (game: Game) => {
   const currentVotes = votes[game.gameId][game.currentRoundIndex];
-  const currentVoteCount = Object.values(currentVotes).reduce(
-    (sum, vote) => sum + vote
-  );
+  const currentVoteCount = Object.keys(currentVotes || {}).length;
   const allActivePlayers = getActivePlayerNames(
     Object.values(gamePlayers[game.gameId])
   );

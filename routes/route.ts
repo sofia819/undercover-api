@@ -10,6 +10,7 @@ import {
   PlayerClient,
   GameConnectedRequest,
   ErrorType,
+  OtherRequest,
 } from '../types.js';
 import WebSocket from 'ws';
 
@@ -86,13 +87,17 @@ const routes = (fastify: FastifyInstance) => {
 
     // Client sends data - update as needed
     socket.on('message', (rawData) => {
-      const message: GameConnectedRequest = JSON.parse(rawData.toString());
+      const message: GameConnectedRequest | OtherRequest = JSON.parse(
+        rawData.toString()
+      );
 
-      if (message.type == MessageType.CONNECTED) {
+      if (message?.type == MessageType.CONNECTED) {
         const { gameId, playerName } = message;
         addClient(gameId, clientId, playerName, socket);
         const playerClient = clientIdToGameId[clientId];
         sendGameInfo(playerClient.gameId);
+      } else {
+        console.log(clientIdToGameId);
       }
     });
 
@@ -102,6 +107,7 @@ const routes = (fastify: FastifyInstance) => {
       if (clientId in clientIdToGameId) {
         const playerClient = clientIdToGameId[clientId];
         service.leaveGame(playerClient.gameId, playerClient.playerName);
+        delete clientIdToGameId[clientId];
         sendGameInfo(playerClient.gameId);
       }
 

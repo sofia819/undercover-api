@@ -35,7 +35,7 @@ export interface Clue {
 }
 
 export interface Vote {
-  [votedPlayerName: string]: number;
+  [playerName: string]: string;
 }
 
 export interface GameState {
@@ -52,6 +52,7 @@ export interface GameState {
 
 export enum MessageType {
   CONNECTED = 'CONNECTED',
+  OTHER = 'OTHER',
 }
 
 export type Message = CreateGameRequest | JoinGameRequest;
@@ -60,6 +61,11 @@ export interface GameConnectedRequest {
   type: MessageType.CONNECTED;
   gameId: string;
   playerName: string;
+}
+
+export interface OtherRequest {
+  type: MessageType.OTHER;
+  message: string;
 }
 
 export interface CreateGameRequest {
