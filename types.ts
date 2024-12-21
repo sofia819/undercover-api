@@ -22,7 +22,8 @@ export enum Status {
   WAITING = 'WAITING',
   CLUE = 'CLUE',
   VOTE = 'VOTE',
-  COMPLETE = 'COMPLETE',
+  CIVILIAN_WON = 'CIVILIAN_WON',
+  SPY_WON = 'SPY_WON',
 }
 
 export enum Role {
@@ -78,6 +79,10 @@ export interface JoinGameRequest {
 }
 
 export interface StartGameRequest {
+  gameId: string;
+}
+
+export interface RestartGameRequest {
   gameId: string;
 }
 

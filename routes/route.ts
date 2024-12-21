@@ -11,6 +11,7 @@ import {
   GameConnectedRequest,
   ErrorType,
   OtherRequest,
+  RestartGameRequest,
 } from '../types.js';
 import WebSocket from 'ws';
 
@@ -106,22 +107,42 @@ const routes = (fastify: FastifyInstance) => {
     socket.on('close', () => {
       if (clientId in clientIdToGameId) {
         const playerClient = clientIdToGameId[clientId];
-        service.leaveGame(playerClient.gameId, playerClient.playerName);
-        delete clientIdToGameId[clientId];
-        sendGameInfo(playerClient.gameId);
-      }
+        const gameId = playerClient.gameId;
 
-      // TODO: if removed player is a spy and no spies left - broadcast declare winner
+        service.leaveGame(gameId, playerClient.playerName);
+        delete clientIdToGameId[clientId];
+
+        const clients = gameIdToClients[gameId].filter(
+          (client) => client !== socket
+        );
+        gameIdToClients[gameId] = clients;
+
+        if (clients.length === 0) {
+          delete gameIdToClients[gameId];
+        } else {
+          sendGameInfo(playerClient.gameId);
+        }
+      }
     });
   });
 
-  // game starts - broadcast necessary info to players
+  // game starts
   fastify.post(
     '/start',
     (request: FastifyRequest<{ Body: StartGameRequest }>, reply) => {
       const { gameId } = request.body;
       service.startGame(gameId);
       reply.send();
+      sendGameInfo(gameId);
+    }
+  );
+
+  // game restarts
+  fastify.post(
+    '/restart',
+    (request: FastifyRequest<{ Body: RestartGameRequest }>, reply) => {
+      const { gameId } = request.body;
+      service.restartGame(gameId);
       sendGameInfo(gameId);
     }
   );
