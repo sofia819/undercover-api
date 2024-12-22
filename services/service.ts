@@ -1,4 +1,5 @@
 import { Game, Player, Status, Role, Clue, Vote } from '../types.js';
+import { getWords } from './word-service.js';
 
 const games: { [gameId: string]: Game } = {};
 
@@ -12,21 +13,25 @@ const gameClues: { [gameId: string]: Clue[] } = {};
 
 const gameVotes: { [gameId: string]: Vote[] } = {};
 
-export const createGame = (): string => {
+export const createGame = async () => {
   const gameId: string = generateRandomCode();
-  games[gameId] = {
-    gameId,
-    civilianWord: 'car',
-    spyWord: 'van',
-    gameStatus: Status.WAITING,
-    currentRoundIndex: -1,
-    maxRoundIndex: 2,
-  };
-  gamePlayers[gameId] = {};
-  gamePlayerOrders[gameId] = [];
-  gameClues[gameId] = [];
-  gameVotes[gameId] = [];
-  gameEliminations[gameId] = [];
+  await getWords()
+    .then((words) => words.replace(' ', '').split(','))
+    .then(([civilianWord, spyWord]) => {
+      games[gameId] = {
+        gameId,
+        civilianWord,
+        spyWord,
+        gameStatus: Status.WAITING,
+        currentRoundIndex: -1,
+        maxRoundIndex: 2,
+      };
+      gamePlayers[gameId] = {};
+      gamePlayerOrders[gameId] = [];
+      gameClues[gameId] = [];
+      gameVotes[gameId] = [];
+      gameEliminations[gameId] = [];
+    });
 
   return gameId;
 };
@@ -193,9 +198,6 @@ const handleVoteStatus = (game: Game) => {
 
 const removePlayer = (gameId: string, playerToRemove: string) => {
   gamePlayers[gameId][playerToRemove].isActive = false;
-  // gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
-  //   (player) => player !== playerToRemove
-  // );
   gameEliminations[gameId].push(playerToRemove);
 };
 
@@ -210,7 +212,9 @@ const checkSpyStatus = (game: Game) => {
 
   if (
     (currentRoundIndex === maxRoundIndex ||
-      gamePlayerOrders[gameId].length === 2) &&
+      Object.values(gamePlayers[gameId] || {}).filter(
+        (player) => player.isActive
+      ).length === 2) &&
     spiesAlive
   ) {
     game.gameStatus = Status.SPY_WON;

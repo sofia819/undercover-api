@@ -50,9 +50,10 @@ const routes = (fastify: FastifyInstance) => {
     '/create',
     (request: FastifyRequest<{ Body: CreateGameRequest }>, reply) => {
       const { playerName } = request.body;
-      const gameId = service.createGame();
-      service.joinGame(gameId, playerName);
-      reply.send(gameId);
+      service.createGame().then((gameId) => {
+        service.joinGame(gameId, playerName);
+        reply.send(gameId);
+      });
     }
   );
 
