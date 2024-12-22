@@ -48,9 +48,9 @@ export const restartGame = async (gameId: string) => {
         currentRoundIndex: -1,
         maxRoundIndex: 2,
       };
-      Object.keys(gamePlayers[gameId] || {}).forEach((player) =>
-        joinGame(gameId, player)
-      );
+      gamePlayers[gameId] = {};
+      gamePlayerOrders[gameId].forEach((player) => joinGame(gameId, player));
+      gamePlayerOrders[gameId] = Object.keys(gamePlayers[gameId]);
       gameClues[gameId] = [];
       gameVotes[gameId] = [];
       gameEliminations[gameId] = [];
