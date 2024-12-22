@@ -40,7 +40,7 @@ export const restartGame = (gameId: string) => {
     currentRoundIndex: -1,
     maxRoundIndex: 2,
   };
-  Object.keys(gamePlayers[gameId]).forEach((player) =>
+  Object.keys(gamePlayers[gameId] || {}).forEach((player) =>
     joinGame(gameId, player)
   );
   gamePlayerOrders[gameId] = [];
@@ -64,22 +64,22 @@ const joinGame = (gameId: string, playerName: string) => {
 };
 
 const leaveGame = (gameId: string, playerName: string) => {
-  delete gamePlayers[gameId][playerName];
-  gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
+  delete gamePlayers[gameId]?.[playerName];
+  gamePlayerOrders[gameId] = gamePlayerOrders[gameId]?.filter(
     (player) => player !== playerName
   );
-  gameEliminations[gameId] = gameEliminations[gameId].filter(
+  gameEliminations[gameId] = gameEliminations[gameId]?.filter(
     (player) => player !== playerName
   );
 
-  gameClues[gameId].forEach((clues) => delete clues[playerName]);
-  gameVotes[gameId].forEach((votes) => delete votes[playerName]);
+  gameClues[gameId]?.forEach((clues) => delete clues[playerName]);
+  gameVotes[gameId]?.forEach((votes) => delete votes[playerName]);
 
-  checkSpyStatus(games[gameId]);
+  checkSpyStatus(games?.[gameId]);
 
-  if (Object.keys(gamePlayers[gameId]).length === 0) {
-    delete games[gameId];
-    delete gamePlayers[gameId];
+  if (Object.keys(gamePlayers[gameId] || {}).length === 0) {
+    delete games?.[gameId];
+    delete gamePlayers?.[gameId];
   }
 };
 
@@ -88,7 +88,7 @@ const startGame = (gameId: string) => {
   incrementRound(gameId);
 
   const players = gamePlayers[gameId];
-  const shuffled = shufflePlayers(Object.keys(players));
+  const shuffled = shufflePlayers(Object.keys(players || {}));
   gamePlayerOrders[gameId] = shuffled;
 
   const spyPlayerIndex = Math.floor(Math.random() * (shuffled.length - 1));
@@ -149,8 +149,6 @@ const updateGameStatus = (gameId: string) => {
       handleVoteStatus(game);
       break;
   }
-
-  // broadcast results if game ended?
 };
 
 const handleWaitingStatus = (game: Game) => {
@@ -159,7 +157,7 @@ const handleWaitingStatus = (game: Game) => {
 
 const handleClueStatus = (game: Game) => {
   const playersSubmittedClues = Object.keys(
-    gameClues[game.gameId][game.currentRoundIndex]
+    gameClues[game.gameId][game.currentRoundIndex] || {}
   );
   const allActivePlayers = getActivePlayerNames(
     Object.values(gamePlayers[game.gameId])
@@ -195,14 +193,14 @@ const handleVoteStatus = (game: Game) => {
 
 const removePlayer = (gameId: string, playerToRemove: string) => {
   gamePlayers[gameId][playerToRemove].isActive = false;
-  gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
-    (player) => player !== playerToRemove
-  );
+  // gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
+  //   (player) => player !== playerToRemove
+  // );
   gameEliminations[gameId].push(playerToRemove);
 };
 
 const checkSpyStatus = (game: Game) => {
-  if (game.gameStatus === Status.WAITING) {
+  if (!game || game?.gameStatus === Status.WAITING) {
     return;
   }
 
@@ -253,21 +251,17 @@ const containsAll = (arr1: any[], arr2: any[]) =>
 const getGameInfo = (gameId: string) => {
   const game = games?.[gameId];
 
-  const info = {
-    gameId: game.gameId,
-    gameStatus: game.gameStatus,
-    currentRoundIndex: game.currentRoundIndex,
-    maxRoundIndex: game.maxRoundIndex,
-    players: gamePlayers[gameId],
-    playerOrder: gamePlayerOrders[gameId],
-    clues: gameClues[gameId],
-    votes: gameVotes[gameId],
-    eliminatedPlayers: gameEliminations[gameId],
-  };
-
   return game
     ? {
-        ...info,
+        gameId: game.gameId,
+        gameStatus: game.gameStatus,
+        currentRoundIndex: game.currentRoundIndex,
+        maxRoundIndex: game.maxRoundIndex,
+        players: gamePlayers[gameId],
+        playerOrder: gamePlayerOrders[gameId],
+        clues: gameClues[gameId],
+        votes: gameVotes[gameId],
+        eliminatedPlayers: gameEliminations[gameId],
       }
     : null;
 };
