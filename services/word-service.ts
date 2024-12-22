@@ -23,16 +23,17 @@ Return only the two words, separated by a comma and in lowercase. Do not provide
 `;
 
 export const getWords = async () => {
-  const result = await groq.chat.completions.create({
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
-    model: 'llama3-70b-8192',
-  });
-  return result.choices[0]?.message?.content || '';
+  return 'piano,keys';
+  // const result = await groq.chat.completions.create({
+  //   messages: [
+  //     {
+  //       role: 'user',
+  //       content: prompt,
+  //     },
+  //   ],
+  //   model: 'llama3-70b-8192',
+  // });
+  // return result.choices[0]?.message?.content || '';
 };
 
 export const wordService = { getWords };

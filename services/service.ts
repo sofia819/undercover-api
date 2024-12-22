@@ -255,19 +255,36 @@ const containsAll = (arr1: any[], arr2: any[]) =>
 const getGameInfo = (gameId: string) => {
   const game = games?.[gameId];
 
-  return game
-    ? {
-        gameId: game.gameId,
-        gameStatus: game.gameStatus,
-        currentRoundIndex: game.currentRoundIndex,
-        maxRoundIndex: game.maxRoundIndex,
-        players: gamePlayers[gameId],
-        playerOrder: gamePlayerOrders[gameId],
-        clues: gameClues[gameId],
-        votes: gameVotes[gameId],
-        eliminatedPlayers: gameEliminations[gameId],
-      }
-    : null;
+  if (!game) {
+    return null;
+  }
+
+  const players = gamePlayers[gameId];
+  const shouldHideRole =
+    game.gameStatus !== Status.CIVILIAN_WON &&
+    game.gameStatus !== Status.SPY_WON;
+  const hiddenPlayers: { [playerName: string]: Player } = {};
+  if (shouldHideRole) {
+    Object.keys(players || {}).forEach(
+      (playerName) =>
+        (hiddenPlayers[playerName] = {
+          ...players[playerName],
+          role: Role.HIDDEN,
+        })
+    );
+  }
+
+  return {
+    gameId: game.gameId,
+    gameStatus: game.gameStatus,
+    currentRoundIndex: game.currentRoundIndex,
+    maxRoundIndex: game.maxRoundIndex,
+    players: shouldHideRole ? hiddenPlayers : players,
+    playerOrder: gamePlayerOrders[gameId],
+    clues: gameClues[gameId],
+    votes: gameVotes[gameId],
+    eliminatedPlayers: gameEliminations[gameId],
+  };
 };
 
 export const service = {

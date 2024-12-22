@@ -105,7 +105,6 @@ const routes = (fastify: FastifyInstance) => {
     });
 
     // Client disconnect - remove player
-
     socket.on('close', () => {
       if (clientId in clientIdToGameId) {
         const playerClient = clientIdToGameId[clientId];
