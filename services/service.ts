@@ -51,7 +51,6 @@ export const restartGame = async (gameId: string) => {
       Object.keys(gamePlayers[gameId] || {}).forEach((player) =>
         joinGame(gameId, player)
       );
-      gamePlayerOrders[gameId] = [];
       gameClues[gameId] = [];
       gameVotes[gameId] = [];
       gameEliminations[gameId] = [];
