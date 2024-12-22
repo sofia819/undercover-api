@@ -50,9 +50,10 @@ const routes = (fastify: FastifyInstance) => {
     '/create',
     (request: FastifyRequest<{ Body: CreateGameRequest }>, reply) => {
       const { playerName } = request.body;
-      const gameId = service.createGame();
-      service.joinGame(gameId, playerName);
-      reply.send(gameId);
+      service.createGame().then((gameId) => {
+        service.joinGame(gameId, playerName);
+        reply.send(gameId);
+      });
     }
   );
 
@@ -104,7 +105,6 @@ const routes = (fastify: FastifyInstance) => {
     });
 
     // Client disconnect - remove player
-
     socket.on('close', () => {
       if (clientId in clientIdToGameId) {
         const playerClient = clientIdToGameId[clientId];
@@ -143,8 +143,7 @@ const routes = (fastify: FastifyInstance) => {
     '/restart',
     (request: FastifyRequest<{ Body: RestartGameRequest }>, reply) => {
       const { gameId } = request.body;
-      service.restartGame(gameId);
-      sendGameInfo(gameId);
+      service.restartGame(gameId).then(() => sendGameInfo(gameId));
     }
   );
 

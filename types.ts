@@ -29,6 +29,7 @@ export enum Status {
 export enum Role {
   CIVILIAN = 'CIVILIAN',
   SPY = 'SPY',
+  HIDDEN = 'HIDDEN',
 }
 
 export interface Clue {

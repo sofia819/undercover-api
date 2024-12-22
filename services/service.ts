@@ -1,4 +1,5 @@
 import { Game, Player, Status, Role, Clue, Vote } from '../types.js';
+import { getWords } from './word-service.js';
 
 const games: { [gameId: string]: Game } = {};
 
@@ -12,44 +13,51 @@ const gameClues: { [gameId: string]: Clue[] } = {};
 
 const gameVotes: { [gameId: string]: Vote[] } = {};
 
-export const createGame = (): string => {
+export const createGame = async () => {
   const gameId: string = generateRandomCode();
-  games[gameId] = {
-    gameId,
-    civilianWord: 'car',
-    spyWord: 'van',
-    gameStatus: Status.WAITING,
-    currentRoundIndex: -1,
-    maxRoundIndex: 2,
-  };
-  gamePlayers[gameId] = {};
-  gamePlayerOrders[gameId] = [];
-  gameClues[gameId] = [];
-  gameVotes[gameId] = [];
-  gameEliminations[gameId] = [];
+  await getWords()
+    .then((words) => words.replace(' ', '').split(','))
+    .then(([civilianWord, spyWord]) => {
+      games[gameId] = {
+        gameId,
+        civilianWord,
+        spyWord,
+        gameStatus: Status.WAITING,
+        currentRoundIndex: -1,
+        maxRoundIndex: 2,
+      };
+      gamePlayers[gameId] = {};
+      gamePlayerOrders[gameId] = [];
+      gameClues[gameId] = [];
+      gameVotes[gameId] = [];
+      gameEliminations[gameId] = [];
+    });
 
   return gameId;
 };
 
-export const restartGame = (gameId: string) => {
-  games[gameId] = {
-    gameId,
-    civilianWord: 'car',
-    spyWord: 'van',
-    gameStatus: Status.WAITING,
-    currentRoundIndex: -1,
-    maxRoundIndex: 2,
-  };
-  Object.keys(gamePlayers[gameId]).forEach((player) =>
-    joinGame(gameId, player)
-  );
-  gamePlayerOrders[gameId] = [];
-  gameClues[gameId] = [];
-  gameVotes[gameId] = [];
-  gameEliminations[gameId] = [];
+export const restartGame = async (gameId: string) => {
+  await getWords()
+    .then((words) => words.replace(' ', '').split(','))
+    .then(([civilianWord, spyWord]) => {
+      games[gameId] = {
+        gameId,
+        civilianWord,
+        spyWord,
+        gameStatus: Status.WAITING,
+        currentRoundIndex: -1,
+        maxRoundIndex: 2,
+      };
+      gamePlayers[gameId] = {};
+      gamePlayerOrders[gameId].forEach((player) => joinGame(gameId, player));
+      gamePlayerOrders[gameId] = Object.keys(gamePlayers[gameId]);
+      gameClues[gameId] = [];
+      gameVotes[gameId] = [];
+      gameEliminations[gameId] = [];
+    });
 };
-``;
-export const generateRandomCode = (): string =>
+
+const generateRandomCode = (): string =>
   Math.random().toString(36).substring(3, 7);
 
 const joinGame = (gameId: string, playerName: string) => {
@@ -64,22 +72,22 @@ const joinGame = (gameId: string, playerName: string) => {
 };
 
 const leaveGame = (gameId: string, playerName: string) => {
-  delete gamePlayers[gameId][playerName];
-  gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
+  delete gamePlayers[gameId]?.[playerName];
+  gamePlayerOrders[gameId] = gamePlayerOrders[gameId]?.filter(
     (player) => player !== playerName
   );
-  gameEliminations[gameId] = gameEliminations[gameId].filter(
+  gameEliminations[gameId] = gameEliminations[gameId]?.filter(
     (player) => player !== playerName
   );
 
-  gameClues[gameId].forEach((clues) => delete clues[playerName]);
-  gameVotes[gameId].forEach((votes) => delete votes[playerName]);
+  gameClues[gameId]?.forEach((clues) => delete clues[playerName]);
+  gameVotes[gameId]?.forEach((votes) => delete votes[playerName]);
 
-  checkSpyStatus(games[gameId]);
+  checkSpyStatus(games?.[gameId]);
 
-  if (Object.keys(gamePlayers[gameId]).length === 0) {
-    delete games[gameId];
-    delete gamePlayers[gameId];
+  if (Object.keys(gamePlayers[gameId] || {}).length === 0) {
+    delete games?.[gameId];
+    delete gamePlayers?.[gameId];
   }
 };
 
@@ -88,7 +96,7 @@ const startGame = (gameId: string) => {
   incrementRound(gameId);
 
   const players = gamePlayers[gameId];
-  const shuffled = shufflePlayers(Object.keys(players));
+  const shuffled = shufflePlayers(Object.keys(players || {}));
   gamePlayerOrders[gameId] = shuffled;
 
   const spyPlayerIndex = Math.floor(Math.random() * (shuffled.length - 1));
@@ -149,8 +157,6 @@ const updateGameStatus = (gameId: string) => {
       handleVoteStatus(game);
       break;
   }
-
-  // broadcast results if game ended?
 };
 
 const handleWaitingStatus = (game: Game) => {
@@ -159,7 +165,7 @@ const handleWaitingStatus = (game: Game) => {
 
 const handleClueStatus = (game: Game) => {
   const playersSubmittedClues = Object.keys(
-    gameClues[game.gameId][game.currentRoundIndex]
+    gameClues[game.gameId][game.currentRoundIndex] || {}
   );
   const allActivePlayers = getActivePlayerNames(
     Object.values(gamePlayers[game.gameId])
@@ -195,14 +201,11 @@ const handleVoteStatus = (game: Game) => {
 
 const removePlayer = (gameId: string, playerToRemove: string) => {
   gamePlayers[gameId][playerToRemove].isActive = false;
-  gamePlayerOrders[gameId] = gamePlayerOrders[gameId].filter(
-    (player) => player !== playerToRemove
-  );
   gameEliminations[gameId].push(playerToRemove);
 };
 
 const checkSpyStatus = (game: Game) => {
-  if (game.gameStatus === Status.WAITING) {
+  if (!game || game?.gameStatus === Status.WAITING) {
     return;
   }
 
@@ -212,7 +215,9 @@ const checkSpyStatus = (game: Game) => {
 
   if (
     (currentRoundIndex === maxRoundIndex ||
-      gamePlayerOrders[gameId].length === 2) &&
+      Object.values(gamePlayers[gameId] || {}).filter(
+        (player) => player.isActive
+      ).length === 2) &&
     spiesAlive
   ) {
     game.gameStatus = Status.SPY_WON;
@@ -253,23 +258,36 @@ const containsAll = (arr1: any[], arr2: any[]) =>
 const getGameInfo = (gameId: string) => {
   const game = games?.[gameId];
 
-  const info = {
+  if (!game) {
+    return null;
+  }
+
+  const players = gamePlayers[gameId];
+  const shouldHideRole =
+    game.gameStatus !== Status.CIVILIAN_WON &&
+    game.gameStatus !== Status.SPY_WON;
+  const hiddenPlayers: { [playerName: string]: Player } = {};
+  if (shouldHideRole) {
+    Object.keys(players || {}).forEach(
+      (playerName) =>
+        (hiddenPlayers[playerName] = {
+          ...players[playerName],
+          role: Role.HIDDEN,
+        })
+    );
+  }
+
+  return {
     gameId: game.gameId,
     gameStatus: game.gameStatus,
     currentRoundIndex: game.currentRoundIndex,
     maxRoundIndex: game.maxRoundIndex,
-    players: gamePlayers[gameId],
+    players: shouldHideRole ? hiddenPlayers : players,
     playerOrder: gamePlayerOrders[gameId],
     clues: gameClues[gameId],
     votes: gameVotes[gameId],
     eliminatedPlayers: gameEliminations[gameId],
   };
-
-  return game
-    ? {
-        ...info,
-      }
-    : null;
 };
 
 export const service = {
@@ -282,5 +300,4 @@ export const service = {
   submitVote,
   getWord,
   getGameInfo,
-  generateRandomCode,
 };
