@@ -36,25 +36,29 @@ export const createGame = async () => {
   return gameId;
 };
 
-export const restartGame = (gameId: string) => {
-  games[gameId] = {
-    gameId,
-    civilianWord: 'car',
-    spyWord: 'van',
-    gameStatus: Status.WAITING,
-    currentRoundIndex: -1,
-    maxRoundIndex: 2,
-  };
-  Object.keys(gamePlayers[gameId] || {}).forEach((player) =>
-    joinGame(gameId, player)
-  );
-  gamePlayerOrders[gameId] = [];
-  gameClues[gameId] = [];
-  gameVotes[gameId] = [];
-  gameEliminations[gameId] = [];
+export const restartGame = async (gameId: string) => {
+  await getWords()
+    .then((words) => words.replace(' ', '').split(','))
+    .then(([civilianWord, spyWord]) => {
+      games[gameId] = {
+        gameId,
+        civilianWord,
+        spyWord,
+        gameStatus: Status.WAITING,
+        currentRoundIndex: -1,
+        maxRoundIndex: 2,
+      };
+      Object.keys(gamePlayers[gameId] || {}).forEach((player) =>
+        joinGame(gameId, player)
+      );
+      gamePlayerOrders[gameId] = [];
+      gameClues[gameId] = [];
+      gameVotes[gameId] = [];
+      gameEliminations[gameId] = [];
+    });
 };
-``;
-export const generateRandomCode = (): string =>
+
+const generateRandomCode = (): string =>
   Math.random().toString(36).substring(3, 7);
 
 const joinGame = (gameId: string, playerName: string) => {
@@ -297,5 +301,4 @@ export const service = {
   submitVote,
   getWord,
   getGameInfo,
-  generateRandomCode,
 };

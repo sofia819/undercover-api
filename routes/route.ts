@@ -143,8 +143,7 @@ const routes = (fastify: FastifyInstance) => {
     '/restart',
     (request: FastifyRequest<{ Body: RestartGameRequest }>, reply) => {
       const { gameId } = request.body;
-      service.restartGame(gameId);
-      sendGameInfo(gameId);
+      service.restartGame(gameId).then(() => sendGameInfo(gameId));
     }
   );
 
