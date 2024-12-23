@@ -7,20 +7,18 @@ const fastify = Fastify({
   logger: true,
 });
 const port = Number.parseInt(process.env.PORT) || 5000;
-const appUrl = process.env.APP_URL;
+const allowedUrls = (process.env.ALLOWED_URLS || '').split(',');
 const host = 'RENDER' in process.env ? `0.0.0.0` : `localhost`;
 
 fastify.register(websocket);
 fastify.register(cors, {
-  origin: (origin, cb) => {
-    //  Request from appUrl will pass
-    if (origin.startsWith(appUrl)) {
-      cb(null, true);
-      return;
+  origin: (origin, callback) => {
+    //  Request from allowed URLs will pass
+    if (!origin || allowedUrls.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed'), false);
     }
-
-    // Generate an error on other origins, disabling access
-    cb(new Error('Not allowed'), false);
   },
 });
 fastify.register(route, { prefix: '/' });
