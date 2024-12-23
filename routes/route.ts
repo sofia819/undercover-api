@@ -85,47 +85,51 @@ const routes = (fastify: FastifyInstance) => {
   );
 
   // websocket - create or join game
-  fastify.get('', { websocket: true }, (socket, request: FastifyRequest) => {
-    const clientId = request.id;
+  fastify.get(
+    '/connect',
+    { websocket: true },
+    (socket, request: FastifyRequest) => {
+      const clientId = request.id;
 
-    // Client sends data - update as needed
-    socket.on('message', (rawData) => {
-      const message: GameConnectedRequest | OtherRequest = JSON.parse(
-        rawData.toString()
-      );
-
-      if (message?.type == MessageType.CONNECTED) {
-        const { gameId, playerName } = message;
-        addClient(gameId, clientId, playerName, socket);
-        const playerClient = clientIdToGameId[clientId];
-        sendGameInfo(playerClient.gameId);
-      } else {
-        console.log(clientIdToGameId);
-      }
-    });
-
-    // Client disconnect - remove player
-    socket.on('close', () => {
-      if (clientId in clientIdToGameId) {
-        const playerClient = clientIdToGameId[clientId];
-        const gameId = playerClient.gameId;
-
-        service.leaveGame(gameId, playerClient.playerName);
-        delete clientIdToGameId[clientId];
-
-        const clients = gameIdToClients[gameId].filter(
-          (client) => client !== socket
+      // Client sends data - update as needed
+      socket.on('message', (rawData) => {
+        const message: GameConnectedRequest | OtherRequest = JSON.parse(
+          rawData.toString()
         );
-        gameIdToClients[gameId] = clients;
 
-        if (clients.length === 0) {
-          delete gameIdToClients[gameId];
-        } else {
+        if (message?.type == MessageType.CONNECTED) {
+          const { gameId, playerName } = message;
+          addClient(gameId, clientId, playerName, socket);
+          const playerClient = clientIdToGameId[clientId];
           sendGameInfo(playerClient.gameId);
+        } else {
+          console.log(clientIdToGameId);
         }
-      }
-    });
-  });
+      });
+
+      // Client disconnect - remove player
+      socket.on('close', () => {
+        if (clientId in clientIdToGameId) {
+          const playerClient = clientIdToGameId[clientId];
+          const gameId = playerClient.gameId;
+
+          service.leaveGame(gameId, playerClient.playerName);
+          delete clientIdToGameId[clientId];
+
+          const clients = gameIdToClients[gameId].filter(
+            (client) => client !== socket
+          );
+          gameIdToClients[gameId] = clients;
+
+          if (clients.length === 0) {
+            delete gameIdToClients[gameId];
+          } else {
+            sendGameInfo(playerClient.gameId);
+          }
+        }
+      });
+    }
+  );
 
   // game starts
   fastify.post(
@@ -198,6 +202,11 @@ const routes = (fastify: FastifyInstance) => {
       reply.send(service.getGameInfo(gameId));
     }
   );
+
+  // healthcheck
+  fastify.get('', (request, reply) => {
+    reply.send("It's live!");
+  });
 };
 
 export default routes;
