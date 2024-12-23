@@ -1,14 +1,13 @@
 import route from './routes/route.js';
-import * as dotenv from 'dotenv';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 
 const fastify = Fastify({
-  logger: true,
+  // logger: true,
 });
-const port: number =
-  Number.parseInt(dotenv.config()?.parsed?.PORT || '') || 5000;
+const port = Number.parseInt(process.env.PORT) || 5000;
+const appUrl = process.env.APP_URL;
 const host = 'RENDER' in process.env ? `0.0.0.0` : `localhost`;
 
 fastify.register(websocket);
