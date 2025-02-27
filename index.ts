@@ -2,6 +2,7 @@ import route from './routes/route.js';
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
+import 'dotenv/config';
 
 const fastify = Fastify({
   logger: true,
